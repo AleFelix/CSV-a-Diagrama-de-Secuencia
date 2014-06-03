@@ -16,44 +16,66 @@ import au.com.bytecode.opencsv.CSVReader;
 
 @SuppressWarnings("rawtypes")
 public class Generador {
-	
-	private TextoGrafico tg = new TextoGrafico();
-	final int tn = 19;
-	final int longTitulo = tn-4;
-	final int restar = 0;
-	final String tapa = tg.crearTapa(tn);
-	final String paddingCabecera = tg.crearPadding(tn/2+1-restar);
-	final String paddingTitulos = tg.crearPadding(tn-2);
-	final String paddingLineas = tg.crearPadding(tn-restar);
-	final String flechaDerecha = tg.crearFlecha((tn-restar)*2, true);
-	final String flechaIzquierda = tg.crearFlecha((tn-restar)*2, false);
-	final String cuerpoFlecha = tg.crearFlecha((tn-restar)*2);
-	
-	
-	final static String Broadcast = "Broadcast";
+
+	final static int TAM_DEF_CAB = 19;
+	final static int MIN_TAM_CAB = 13;
+	final static int MAX_TAM_RESTA = 9;
+	final static String BROADCAST = "Broadcast";
 	final static String ARP = "ARP";
-	final static String puntos = "...";
+	final static String PUNTOS = "...";
+
+	private TextoGrafico tg = new TextoGrafico();
+
+	int tn;
+	int restar;
+	final int longTitulo = tn - 4;
+	final String tapa = tg.crearTapa(tn);
+	final String paddingCabecera = tg.crearPadding(tn / 2 + 1 - restar);
+	final String paddingTitulos = tg.crearPadding(tn - 2);
+	final String paddingLineas = tg.crearPadding(tn - restar);
+	final String flechaDerecha = tg.crearFlecha((tn - restar) * 2, true);
+	final String flechaIzquierda = tg.crearFlecha((tn - restar) * 2, false);
+	final String cuerpoFlecha = tg.crearFlecha((tn - restar) * 2);
+
 	private List listaLineas;
 	private PrintWriter escribir;
-	  
+
+	public Generador() {
+		tn = TAM_DEF_CAB;
+		restar = 0;
+	}
+
+	public Generador(int tam, int rest) {
+		if (tam < MIN_TAM_CAB) {
+			tam = MIN_TAM_CAB;
+		} else if (tam % 2 == 0) {
+			tam = tam + 1;
+		}
+		if (rest > MAX_TAM_RESTA) {
+			rest = MAX_TAM_RESTA;
+		}
+		tn = tam;
+		restar = rest;
+	}
+
 	public void iniciarPrintWriter() {
 		DateFormat formato = new SimpleDateFormat("HH-mm-ss dd-MM-yyyy");
 		Date fecha = new Date();
 		try {
 			escribir = new PrintWriter("Diagrama (" + formato.format(fecha) + ").html");
 		} catch (FileNotFoundException e) {
-			JOptionPane.showMessageDialog(null,"No se pudo crear el archivo del diagrama","No se puede crear",JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "No se pudo crear el archivo del diagrama", "No se puede crear", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 		}
 	}
-	
+
 	public void generarCabecerahtml() {
 		escribir.println("<html>");
 		escribir.println("<title>Diagrama de Secuencia</title>");
 		escribir.println("<body>");
 		escribir.println("<pre>");
 	}
-	
+
 	public void generarCierrehtml() {
 		escribir.println("</pre>");
 		escribir.println("</body>");
@@ -61,7 +83,8 @@ public class Generador {
 	}
 
 	public void cerrarPrintWriter() {
-		JOptionPane.showMessageDialog(null,"Diagrama de secuencia creado con éxito en el directorio:\n"+System.getProperty("user.dir"),"Diagrama creado",JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(null, "Diagrama de secuencia creado con éxito en el directorio:\n" + System.getProperty("user.dir"),
+				"Diagrama creado", JOptionPane.INFORMATION_MESSAGE);
 		escribir.close();
 	}
 
@@ -77,13 +100,15 @@ public class Generador {
 		try {
 			lector = new CSVReader(new FileReader("./captura.csv"));
 		} catch (FileNotFoundException e1) {
-			JOptionPane.showMessageDialog(null,"No se encontro el archivo captura.csv en el directorio:\n"+System.getProperty("user.dir"),"No encontrado",JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(null, "No se encontro el archivo captura.csv en el directorio:\n" + System.getProperty("user.dir"),
+					"No encontrado", JOptionPane.WARNING_MESSAGE);
 			System.exit(0);
 		}
 		try {
 			listaLineas = lector.readAll();
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(null,"No se pudo leer el archivo captura.csv (Esta corrupto)","Error en archivo",JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "No se pudo leer el archivo captura.csv (Esta corrupto)", "Error en archivo",
+					JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 		}
 		List destinos = new ArrayList();
@@ -137,14 +162,14 @@ public class Generador {
 		for (int i = 0; i < listaIps.size(); i++) {
 			titulo = (String) listaIps.get(i);
 			tamTitulo = titulo.length();
-			if(tamTitulo > longTitulo) {
-				titulo = titulo.substring(0,longTitulo-puntos.length());
-				titulo = titulo + puntos;
+			if (tamTitulo > longTitulo) {
+				titulo = titulo.substring(0, longTitulo - PUNTOS.length());
+				titulo = titulo + PUNTOS;
 				tamTitulo = titulo.length();
 			}
 			escribir.print(paddingCabecera + "| " + titulo + paddingTitulos.substring(tamTitulo + 1) + "|" + paddingCabecera);
 		}
-		escribir.println(paddingCabecera + "| " + Broadcast + paddingTitulos.substring(Broadcast.length() + 1) + "|" + paddingCabecera);
+		escribir.println(paddingCabecera + "| " + BROADCAST + paddingTitulos.substring(BROADCAST.length() + 1) + "|" + paddingCabecera);
 		for (int i = 0; i <= listaIps.size(); i++) {
 			escribir.print(paddingCabecera + tapa + paddingCabecera);
 		}
@@ -201,7 +226,7 @@ public class Generador {
 			}
 		} else {
 			if (longitud >= 2) {
-				escribir.print("-"+cuerpoFlecha+"|");
+				escribir.print("-" + cuerpoFlecha + "|");
 			} else {
 				escribir.print("|");
 			}
@@ -277,7 +302,7 @@ public class Generador {
 			if (protocolo.equals(ARP)) {
 				String[] macIP = (String[]) macs.get(posListaMacs);
 				origen = macIP[1];
-				if (!destino.equals(Broadcast)) {
+				if (!destino.equals(BROADCAST)) {
 					boolean encontrado = false;
 					String[] macIPActual;
 					int p = 0;
@@ -294,7 +319,7 @@ public class Generador {
 			}
 			mensaje = numero + "  " + protocolo + "   " + mensaje;
 			posOrigen = listaIps.indexOf(origen);
-			if (!destino.equals(Broadcast)) {
+			if (!destino.equals(BROADCAST)) {
 				posDestino = listaIps.indexOf(destino);
 			} else {
 				posDestino = listaIps.size();
