@@ -121,14 +121,6 @@ public class Generador {
 			}
 		}
 	}
-	
-	public int modulo(int n) {
-		if (n < 0) {
-			return n * -1;
-		} else {
-			return n;
-		}
-	}
 
 	public void generarCabeceras(List listaIps) {
 		int tamTitulo;
