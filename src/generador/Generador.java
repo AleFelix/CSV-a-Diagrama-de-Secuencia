@@ -25,8 +25,11 @@ public class Generador {
 	final static String flechaDerecha = "------------------------------------->";
 	final static String flechaIzquierda = "<-------------------------------------";
 	final static String cuerpoFlecha = "--------------------------------------";
-	private static List listaLineas;
-	private static PrintWriter escribir;
+	final static String Broadcast = "Broadcast";
+	final static String ARP = "ARP";
+	final static String puntos = "...";
+	private List listaLineas;
+	private PrintWriter escribir;
 	  
 	public void iniciarPrintWriter() {
 		DateFormat formato = new SimpleDateFormat("HH-mm-ss dd-MM-yyyy");
@@ -83,13 +86,13 @@ public class Generador {
 		for (int i = 1; i < listaLineas.size(); i++) {
 			lineaActual = (String[]) listaLineas.get(i);
 			ipMac = new String[2];
-			if (!destinos.contains(lineaActual[2]) && !lineaActual[4].equals("ARP")) {
+			if (!destinos.contains(lineaActual[2]) && !lineaActual[4].equals(ARP)) {
 				destinos.add(lineaActual[2]);
 			}
-			if (!destinos.contains(lineaActual[3]) && !lineaActual[4].equals("ARP")) {
+			if (!destinos.contains(lineaActual[3]) && !lineaActual[4].equals(ARP)) {
 				destinos.add(lineaActual[3]);
 			}
-			if (lineaActual[4].equals("ARP")) {
+			if (lineaActual[4].equals(ARP)) {
 				if (lineaActual[6].substring(0, 3).equals("Who")) {
 					ipMac[0] = lineaActual[2];
 					ipMac[1] = lineaActual[6].split(" ")[5];
@@ -130,7 +133,6 @@ public class Generador {
 	public void generarCabeceras(List listaIps) {
 		int tamTitulo;
 		String titulo;
-		String puntos = "...";
 		for (int i = 0; i <= listaIps.size(); i++) {
 			escribir.print(paddingCabecera + tapa + paddingCabecera);
 		}
@@ -145,7 +147,7 @@ public class Generador {
 			}
 			escribir.print(paddingCabecera + "| " + titulo + paddingTitulos.substring(tamTitulo + 1) + "|" + paddingCabecera);
 		}
-		escribir.println(paddingCabecera + "| " + "Broadcast" + paddingTitulos.substring("Broadcast".length() + 1) + "|" + paddingCabecera);
+		escribir.println(paddingCabecera + "| " + Broadcast + paddingTitulos.substring(Broadcast.length() + 1) + "|" + paddingCabecera);
 		for (int i = 0; i <= listaIps.size(); i++) {
 			escribir.print(paddingCabecera + tapa + paddingCabecera);
 		}
@@ -275,10 +277,10 @@ public class Generador {
 			origen = datos[2];
 			destino = datos[3];
 			mensaje = datos[6];
-			if (protocolo.equals("ARP")) {
+			if (protocolo.equals(ARP)) {
 				String[] macIP = (String[]) macs.get(posListaMacs);
 				origen = macIP[1];
-				if (!destino.equals("Broadcast")) {
+				if (!destino.equals(Broadcast)) {
 					boolean encontrado = false;
 					String[] macIPActual;
 					int p = 0;
@@ -295,7 +297,7 @@ public class Generador {
 			}
 			mensaje = numero + "  " + protocolo + "   " + mensaje;
 			posOrigen = listaIps.indexOf(origen);
-			if (!destino.equals("Broadcast")) {
+			if (!destino.equals(Broadcast)) {
 				posDestino = listaIps.indexOf(destino);
 			} else {
 				posDestino = listaIps.size();
