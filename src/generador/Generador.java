@@ -24,25 +24,37 @@ public class Generador {
 	final static String ARP = "ARP";
 	final static String PUNTOS = "...";
 
-	private TextoGrafico tg = new TextoGrafico();
-
 	int tn;
 	int restar;
-	final int longTitulo = tn - 4;
-	final String tapa = tg.crearTapa(tn);
-	final String paddingCabecera = tg.crearPadding(tn / 2 + 1 - restar);
-	final String paddingTitulos = tg.crearPadding(tn - 2);
-	final String paddingLineas = tg.crearPadding(tn - restar);
-	final String flechaDerecha = tg.crearFlecha((tn - restar) * 2, true);
-	final String flechaIzquierda = tg.crearFlecha((tn - restar) * 2, false);
-	final String cuerpoFlecha = tg.crearFlecha((tn - restar) * 2);
+	int longTitulo;
+	String tapa;
+	String paddingCabecera;
+	String paddingTitulos;
+	String paddingLineas;
+	String flechaDerecha;
+	String flechaIzquierda;
+	String cuerpoFlecha;
 
 	private List listaLineas;
 	private PrintWriter escribir;
+	private TextoGrafico tg;
+	
+	void inicializarVariables() {
+		tg = new TextoGrafico();
+		longTitulo = tn - 4;
+		tapa = tg.crearTapa(tn);
+		paddingCabecera = tg.crearPadding(tn / 2 + 1 - restar);
+		paddingTitulos = tg.crearPadding(tn - 2);
+		paddingLineas = tg.crearPadding(tn - restar);
+		flechaDerecha = tg.crearFlecha((tn - restar) * 2, true);
+		flechaIzquierda = tg.crearFlecha((tn - restar) * 2, false);
+		cuerpoFlecha = tg.crearFlecha((tn - restar) * 2);
+	}
 
 	public Generador() {
 		tn = TAM_DEF_CAB;
 		restar = 0;
+		inicializarVariables();
 	}
 
 	public Generador(int tam, int rest) {
@@ -56,6 +68,7 @@ public class Generador {
 		}
 		tn = tam;
 		restar = rest;
+		inicializarVariables();
 	}
 
 	public void iniciarPrintWriter() {
