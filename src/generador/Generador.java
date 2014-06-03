@@ -16,15 +16,20 @@ import au.com.bytecode.opencsv.CSVReader;
 
 @SuppressWarnings("rawtypes")
 public class Generador {
-
-	final static int longTitulo = 15;
-	final static String tapa = "+-----------------+";
-	final static String paddingCabecera = "          ";
-	final static String paddingTitulos = "                 ";
-	final static String paddingLineas = "                   ";
-	final static String flechaDerecha = "------------------------------------->";
-	final static String flechaIzquierda = "<-------------------------------------";
-	final static String cuerpoFlecha = "--------------------------------------";
+	
+	private TextoGrafico tg = new TextoGrafico();
+	final int tn = 19;
+	final int longTitulo = tn-4;
+	final int restar = 0;
+	final String tapa = tg.crearTapa(tn);
+	final String paddingCabecera = tg.crearPadding(tn/2+1-restar);
+	final String paddingTitulos = tg.crearPadding(tn-2);
+	final String paddingLineas = tg.crearPadding(tn-restar);
+	final String flechaDerecha = tg.crearFlecha((tn-restar)*2, true);
+	final String flechaIzquierda = tg.crearFlecha((tn-restar)*2, false);
+	final String cuerpoFlecha = tg.crearFlecha((tn-restar)*2);
+	
+	
 	final static String Broadcast = "Broadcast";
 	final static String ARP = "ARP";
 	final static String puntos = "...";
