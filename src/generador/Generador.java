@@ -28,7 +28,7 @@ public class Generador {
 	private static List listaLineas;
 	private static PrintWriter escribir;
 	  
-	static void iniciarPrintWriter() {
+	public void iniciarPrintWriter() {
 		DateFormat formato = new SimpleDateFormat("HH-mm-ss dd-MM-yyyy");
 		Date fecha = new Date();
 		try {
@@ -39,30 +39,30 @@ public class Generador {
 		}
 	}
 	
-	static void generarCabecerahtml() {
+	public void generarCabecerahtml() {
 		escribir.println("<html>");
 		escribir.println("<title>Diagrama de Secuencia</title>");
 		escribir.println("<body>");
 		escribir.println("<pre>");
 	}
 	
-	static void generarCierrehtml() {
+	public void generarCierrehtml() {
 		escribir.println("</pre>");
 		escribir.println("</body>");
 		escribir.println("</html>");
 	}
 
-	static void cerrarPrintWriter() {
+	public void cerrarPrintWriter() {
 		JOptionPane.showMessageDialog(null,"Diagrama de secuencia creado con éxito en el directorio:\n"+System.getProperty("user.dir"),"Diagrama creado",JOptionPane.INFORMATION_MESSAGE);
 		escribir.close();
 	}
 
-	static void nLinea() {
+	public void nLinea() {
 		escribir.println("");
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	static void obtenerIpsCSV(List macs, List listaIps) {
+	public void obtenerIpsCSV(List macs, List listaIps) {
 		CSVReader lector = null;
 		listaLineas = null;
 		String[] lineaActual;
@@ -119,7 +119,7 @@ public class Generador {
 		}
 	}
 	
-	static int modulo(int n) {
+	public int modulo(int n) {
 		if (n < 0) {
 			return n * -1;
 		} else {
@@ -127,7 +127,7 @@ public class Generador {
 		}
 	}
 
-	static void generarCabeceras(List listaIps) {
+	public void generarCabeceras(List listaIps) {
 		int tamTitulo;
 		String titulo;
 		String puntos = "...";
@@ -152,14 +152,14 @@ public class Generador {
 		nLinea();
 	}
 
-	static void lineaPunteada(List listaIps) {
+	public void lineaPunteada(List listaIps) {
 		for (int i = 0; i <= listaIps.size(); i++) {
 			escribir.print(paddingLineas + "|" + paddingLineas);
 		}
 		nLinea();
 	}
 
-	static void formarFlecha(int origen, int destino, List listaIps) {
+	public void formarFlecha(int origen, int destino, List listaIps) {
 		boolean derecha;
 		int longitud;
 		int inicio;
@@ -214,7 +214,7 @@ public class Generador {
 		nLinea();
 	}
 
-	static void agregarMensaje(String mensaje, int posOrigen, int posDestino, List listaIps) {
+	public void agregarMensaje(String mensaje, int posOrigen, int posDestino, List listaIps) {
 		int posInicio;
 		if (posOrigen < posDestino) {
 			posInicio = posOrigen;
@@ -257,7 +257,7 @@ public class Generador {
 		nLinea();
 	}
 
-	static void parsearCaptura(List macs, List listaIps) {
+	public void parsearCaptura(List macs, List listaIps) {
 		String[] datos = new String[5];
 		String numero;
 		String protocolo;
@@ -311,18 +311,5 @@ public class Generador {
 				lineaPunteada(listaIps);
 			}
 		}
-	}
-
-	public static void main(String[] args) {
-		List macs = new ArrayList();
-		List listaIps = new ArrayList();
-		obtenerIpsCSV(macs, listaIps);
-		iniciarPrintWriter();
-		generarCabecerahtml();
-		generarCabeceras(listaIps);
-		lineaPunteada(listaIps);
-		parsearCaptura(macs, listaIps);
-		generarCierrehtml();
-		cerrarPrintWriter();
 	}
 }
