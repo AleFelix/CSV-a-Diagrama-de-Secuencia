@@ -23,6 +23,7 @@ public class Generador {
 	final static String BROADCAST = "Broadcast";
 	final static String ARP = "ARP";
 	final static String PUNTOS = "...";
+	final static String NOM_CAP_DEF = "./captura.csv";
 
 	int tn;
 	int restar;
@@ -34,11 +35,13 @@ public class Generador {
 	String flechaDerecha;
 	String flechaIzquierda;
 	String cuerpoFlecha;
+	String nombreCaptura;
+	boolean local;
 
 	private List listaLineas;
 	private PrintWriter escribir;
 	private TextoGrafico tg;
-	
+
 	void inicializarVariables() {
 		tg = new TextoGrafico();
 		longTitulo = tn - 4;
@@ -51,13 +54,7 @@ public class Generador {
 		cuerpoFlecha = tg.crearFlecha((tn - restar) * 2);
 	}
 
-	public Generador() {
-		tn = TAM_DEF_CAB;
-		restar = 0;
-		inicializarVariables();
-	}
-
-	public Generador(int tam, int rest) {
+	void cambiarProporcion(int tam, int rest) {
 		if (tam < MIN_TAM_CAB) {
 			tam = MIN_TAM_CAB;
 		} else if (tam % 2 == 0) {
@@ -68,41 +65,97 @@ public class Generador {
 		}
 		tn = tam;
 		restar = rest;
+	}
+
+	public Generador(String archivo) {
+		tn = TAM_DEF_CAB;
+		restar = 0;
+		local = false;
+		nombreCaptura = archivo;
+		inicializarVariables();
+	}
+
+	public Generador(String archivo, int tam, int rest) {
+		cambiarProporcion(tam, rest);
+		local = false;
+		nombreCaptura = archivo;
+		inicializarVariables();
+	}
+
+	public Generador() {
+		tn = TAM_DEF_CAB;
+		restar = 0;
+		local = true;
+		nombreCaptura = NOM_CAP_DEF;
+		inicializarVariables();
+	}
+
+	public Generador(int tam, int rest) {
+		cambiarProporcion(tam, rest);
+		tn = tam;
+		restar = rest;
+		local = true;
+		nombreCaptura = NOM_CAP_DEF;
 		inicializarVariables();
 	}
 
 	public void iniciarPrintWriter() {
-		DateFormat formato = new SimpleDateFormat("HH-mm-ss dd-MM-yyyy");
-		Date fecha = new Date();
-		try {
-			escribir = new PrintWriter("Diagrama (" + formato.format(fecha) + ").html");
-		} catch (FileNotFoundException e) {
-			JOptionPane.showMessageDialog(null, "No se pudo crear el archivo del diagrama", "No se puede crear", JOptionPane.ERROR_MESSAGE);
-			System.exit(0);
+		if (local) {
+			DateFormat formato = new SimpleDateFormat("HH-mm-ss dd-MM-yyyy");
+			Date fecha = new Date();
+			try {
+				escribir = new PrintWriter("Diagrama (" + formato.format(fecha)
+						+ ").html");
+			} catch (FileNotFoundException e) {
+				JOptionPane.showMessageDialog(null,
+						"No se pudo crear el archivo del diagrama",
+						"No se puede crear", JOptionPane.ERROR_MESSAGE);
+				System.exit(0);
+			}
+		}
+	}
+
+	public void imprimirln(String texto) {
+		if (local) {
+			escribir.println(texto);
+		} else {
+			System.out.println(texto);
+		}
+	}
+
+	public void imprimir(String texto) {
+		if (local) {
+			escribir.print(texto);
+		} else {
+			System.out.print(texto);
 		}
 	}
 
 	public void generarCabecerahtml() {
-		escribir.println("<html>");
-		escribir.println("<title>Diagrama de Secuencia</title>");
-		escribir.println("<body>");
-		escribir.println("<pre>");
+		imprimirln("<html>");
+		imprimirln("<title>Diagrama de Secuencia</title>");
+		imprimirln("<body>");
+		imprimirln("<pre>");
 	}
 
 	public void generarCierrehtml() {
-		escribir.println("</pre>");
-		escribir.println("</body>");
-		escribir.println("</html>");
+		imprimirln("</pre>");
+		imprimirln("</body>");
+		imprimirln("</html>");
 	}
 
 	public void cerrarPrintWriter() {
-		JOptionPane.showMessageDialog(null, "Diagrama de secuencia creado con éxito en el directorio:\n" + System.getProperty("user.dir"),
-				"Diagrama creado", JOptionPane.INFORMATION_MESSAGE);
-		escribir.close();
+		if (local) {
+			JOptionPane.showMessageDialog(null,
+					"Diagrama de secuencia creado con éxito en el directorio:\n"
+							+ System.getProperty("user.dir"),
+					"Diagrama creado", JOptionPane.INFORMATION_MESSAGE);
+			escribir.close();
+		}
 	}
 
 	public void nLinea() {
-		escribir.println("");
+		imprimirln("");
 	}
 
 	@SuppressWarnings({ "unchecked" })
@@ -111,17 +164,20 @@ public class Generador {
 		listaLineas = null;
 		String[] lineaActual;
 		try {
-			lector = new CSVReader(new FileReader("./captura.csv"));
+			lector = new CSVReader(new FileReader(nombreCaptura));
 		} catch (FileNotFoundException e1) {
-			JOptionPane.showMessageDialog(null, "No se encontro el archivo captura.csv en el directorio:\n" + System.getProperty("user.dir"),
-					"No encontrado", JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(null,
+					"No se encontro el archivo captura.csv en el directorio:\n"
+							+ System.getProperty("user.dir"), "No encontrado",
+					JOptionPane.WARNING_MESSAGE);
 			System.exit(0);
 		}
 		try {
 			listaLineas = lector.readAll();
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(null, "No se pudo leer el archivo captura.csv (Esta corrupto)", "Error en archivo",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null,
+					"No se pudo leer el archivo captura.csv (Esta corrupto)",
+					"Error en archivo", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 		}
 		List destinos = new ArrayList();
@@ -129,10 +185,12 @@ public class Generador {
 		for (int i = 1; i < listaLineas.size(); i++) {
 			lineaActual = (String[]) listaLineas.get(i);
 			ipMac = new String[2];
-			if (!destinos.contains(lineaActual[2]) && !lineaActual[4].equals(ARP)) {
+			if (!destinos.contains(lineaActual[2])
+					&& !lineaActual[4].equals(ARP)) {
 				destinos.add(lineaActual[2]);
 			}
-			if (!destinos.contains(lineaActual[3]) && !lineaActual[4].equals(ARP)) {
+			if (!destinos.contains(lineaActual[3])
+					&& !lineaActual[4].equals(ARP)) {
 				destinos.add(lineaActual[3]);
 			}
 			if (lineaActual[4].equals(ARP)) {
@@ -169,7 +227,7 @@ public class Generador {
 		int tamTitulo;
 		String titulo;
 		for (int i = 0; i <= listaIps.size(); i++) {
-			escribir.print(paddingCabecera + tapa + paddingCabecera);
+			imprimir(paddingCabecera + tapa + paddingCabecera);
 		}
 		nLinea();
 		for (int i = 0; i < listaIps.size(); i++) {
@@ -180,18 +238,22 @@ public class Generador {
 				titulo = titulo + PUNTOS;
 				tamTitulo = titulo.length();
 			}
-			escribir.print(paddingCabecera + "| " + titulo + paddingTitulos.substring(tamTitulo + 1) + "|" + paddingCabecera);
+			imprimir(paddingCabecera + "| " + titulo
+					+ paddingTitulos.substring(tamTitulo + 1) + "|"
+					+ paddingCabecera);
 		}
-		escribir.println(paddingCabecera + "| " + BROADCAST + paddingTitulos.substring(BROADCAST.length() + 1) + "|" + paddingCabecera);
+		imprimirln(paddingCabecera + "| " + BROADCAST
+				+ paddingTitulos.substring(BROADCAST.length() + 1) + "|"
+				+ paddingCabecera);
 		for (int i = 0; i <= listaIps.size(); i++) {
-			escribir.print(paddingCabecera + tapa + paddingCabecera);
+			imprimir(paddingCabecera + tapa + paddingCabecera);
 		}
 		nLinea();
 	}
 
 	public void lineaPunteada(List listaIps) {
 		for (int i = 0; i <= listaIps.size(); i++) {
-			escribir.print(paddingLineas + "|" + paddingLineas);
+			imprimir(paddingLineas + "|" + paddingLineas);
 		}
 		nLinea();
 	}
@@ -212,46 +274,47 @@ public class Generador {
 		}
 		posFinal = inicio + longitud;
 		int i = 0;
-		escribir.print(paddingLineas + "|");
+		imprimir(paddingLineas + "|");
 		while (i < inicio) {
-			escribir.print(paddingLineas + paddingLineas + "|");
+			imprimir(paddingLineas + paddingLineas + "|");
 			i++;
 		}
 		if (!derecha) {
-			escribir.print(flechaIzquierda);
+			imprimir(flechaIzquierda);
 		} else {
 			if (longitud > 1) {
-				escribir.print(cuerpoFlecha);
+				imprimir(cuerpoFlecha);
 			} else {
-				escribir.print(flechaDerecha);
+				imprimir(flechaDerecha);
 			}
 		}
 		int restante = longitud - 1;
 		while (restante > 1) {
-			escribir.print("-" + cuerpoFlecha);
+			imprimir("-" + cuerpoFlecha);
 			restante--;
 		}
 		if (derecha) {
 			if (longitud > 1) {
-				escribir.print("-" + flechaDerecha + "|");
+				imprimir("-" + flechaDerecha + "|");
 			} else {
-				escribir.print("|");
+				imprimir("|");
 			}
 		} else {
 			if (longitud >= 2) {
-				escribir.print("-" + cuerpoFlecha + "|");
+				imprimir("-" + cuerpoFlecha + "|");
 			} else {
-				escribir.print("|");
+				imprimir("|");
 			}
 		}
 		while (posFinal < listaIps.size()) {
-			escribir.print(paddingLineas + paddingLineas + "|");
+			imprimir(paddingLineas + paddingLineas + "|");
 			posFinal++;
 		}
 		nLinea();
 	}
 
-	public void agregarMensaje(String mensaje, int posOrigen, int posDestino, List listaIps) {
+	public void agregarMensaje(String mensaje, int posOrigen, int posDestino,
+			List listaIps) {
 		int posInicio;
 		if (posOrigen < posDestino) {
 			posInicio = posOrigen;
@@ -259,14 +322,14 @@ public class Generador {
 			posInicio = posDestino;
 		}
 		int i = 0;
-		escribir.print(paddingLineas + "|");
+		imprimir(paddingLineas + "|");
 		int longitud = paddingLineas.length() + 1;
 		while (i < posInicio) {
-			escribir.print(paddingLineas + paddingLineas + "|");
+			imprimir(paddingLineas + paddingLineas + "|");
 			longitud = longitud + (paddingLineas.length() * 2) + 1;
 			i++;
 		}
-		escribir.print(mensaje);
+		imprimir(mensaje);
 		int longEspacios = paddingLineas.length() * 2;
 		int longInicial = paddingLineas.length() + 1;
 		int tamTotal = longInicial + (longEspacios + 1) * listaIps.size();
@@ -280,12 +343,12 @@ public class Generador {
 				if (medida > longitud) {
 					i = 0;
 					while (i + longitud < medida - 1) {
-						escribir.print(" ");
+						imprimir(" ");
 						i++;
 					}
-					escribir.print("|");
+					imprimir("|");
 					while (medida < tamTotal) {
-						escribir.print(paddingLineas + paddingLineas + "|");
+						imprimir(paddingLineas + paddingLineas + "|");
 						medida = medida + longEspacios + 1;
 					}
 				}
