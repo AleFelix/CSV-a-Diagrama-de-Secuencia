@@ -14,33 +14,34 @@ import javax.swing.JOptionPane;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-@SuppressWarnings("rawtypes")
 public class Generador {
 
-	final static int TAM_DEF_CAB = 19;
-	final static int MIN_TAM_CAB = 13;
-	final static int MAX_TAM_RESTA = 9;
-	final static String BROADCAST = "Broadcast";
-	final static String ARP = "ARP";
-	final static String PUNTOS = "...";
-	final static String NOM_CAP_DEF = "./captura.csv";
+	public final static int TAM_DEF_CAB = 19;
+	public final static int MIN_TAM_CAB = 13;
+	public final static int MAX_TAM_RESTA = 9;
+	public final static String BROADCAST = "Broadcast";
+	public final static String ARP = "ARP";
+	public final static String PUNTOS = "...";
+	public final static String NOM_CAP_DEF = "./captura.csv";
 
-	int tn;
-	int restar;
-	int longTitulo;
-	String tapa;
-	String paddingCabecera;
-	String paddingTitulos;
-	String paddingLineas;
-	String flechaDerecha;
-	String flechaIzquierda;
-	String cuerpoFlecha;
-	String nombreCaptura;
-	boolean local;
+	private int tn;
+	private int restar;
+	private int longTitulo;
+	private String tapa;
+	private String paddingCabecera;
+	private String paddingTitulos;
+	private String paddingLineas;
+	private String flechaDerecha;
+	private String flechaIzquierda;
+	private String cuerpoFlecha;
+	private String nombreCaptura;
+	private boolean local;
 
-	private List listaLineas;
+	private List<String[]> listaLineas;
 	private PrintWriter escribir;
 	private TextoGrafico tg;
+	private List<String> listaIps;
+	private List<String[]> macs;
 
 	void inicializarVariables() {
 		tg = new TextoGrafico();
@@ -52,6 +53,8 @@ public class Generador {
 		flechaDerecha = tg.crearFlecha((tn - restar) * 2, true);
 		flechaIzquierda = tg.crearFlecha((tn - restar) * 2, false);
 		cuerpoFlecha = tg.crearFlecha((tn - restar) * 2);
+		macs = new ArrayList<String[]>();
+		listaIps = new ArrayList<String>();
 	}
 
 	void cambiarProporcion(int tam, int rest) {
@@ -158,8 +161,7 @@ public class Generador {
 		imprimirln("");
 	}
 
-	@SuppressWarnings({ "unchecked" })
-	public void obtenerIpsCSV(List macs, List listaIps) {
+	public void obtenerIpsCSV() {
 		CSVReader lector = null;
 		listaLineas = null;
 		String[] lineaActual;
@@ -180,7 +182,7 @@ public class Generador {
 					"Error en archivo", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 		}
-		List destinos = new ArrayList();
+		List<String> destinos = new ArrayList<String>();
 		String[] ipMac;
 		for (int i = 1; i < listaLineas.size(); i++) {
 			lineaActual = (String[]) listaLineas.get(i);
@@ -216,14 +218,14 @@ public class Generador {
 			}
 		}
 		for (int i = 0; i < macs.size(); i++) {
-			ipMac = (String[]) macs.get(i);
+			ipMac = macs.get(i);
 			if (!listaIps.contains(ipMac[1])) {
 				listaIps.add(ipMac[1]);
 			}
 		}
 	}
 
-	public void generarCabeceras(List listaIps) {
+	public void generarCabeceras() {
 		int tamTitulo;
 		String titulo;
 		for (int i = 0; i <= listaIps.size(); i++) {
@@ -251,14 +253,14 @@ public class Generador {
 		nLinea();
 	}
 
-	public void lineaPunteada(List listaIps) {
+	public void lineaPunteada() {
 		for (int i = 0; i <= listaIps.size(); i++) {
 			imprimir(paddingLineas + "|" + paddingLineas);
 		}
 		nLinea();
 	}
 
-	public void formarFlecha(int origen, int destino, List listaIps) {
+	public void formarFlecha(int origen, int destino) {
 		boolean derecha;
 		int longitud;
 		int inicio;
@@ -313,8 +315,7 @@ public class Generador {
 		nLinea();
 	}
 
-	public void agregarMensaje(String mensaje, int posOrigen, int posDestino,
-			List listaIps) {
+	public void agregarMensaje(String mensaje, int posOrigen, int posDestino) {
 		int posInicio;
 		if (posOrigen < posDestino) {
 			posInicio = posOrigen;
@@ -357,7 +358,7 @@ public class Generador {
 		nLinea();
 	}
 
-	public void parsearCaptura(List macs, List listaIps) {
+	public void parsearCaptura() {
 		String[] datos = new String[5];
 		String numero;
 		String protocolo;
@@ -400,15 +401,15 @@ public class Generador {
 			} else {
 				posDestino = listaIps.size();
 			}
-			agregarMensaje(mensaje, posOrigen, posDestino, listaIps);
-			formarFlecha(posOrigen, posDestino, listaIps);
-			lineaPunteada(listaIps);
-			lineaPunteada(listaIps);
+			agregarMensaje(mensaje, posOrigen, posDestino);
+			formarFlecha(posOrigen, posDestino);
+			lineaPunteada();
+			lineaPunteada();
 			agregarCabeceras++;
 			if (agregarCabeceras == 5) {
-				generarCabeceras(listaIps);
+				generarCabeceras();
 				agregarCabeceras = 0;
-				lineaPunteada(listaIps);
+				lineaPunteada();
 			}
 		}
 	}
