@@ -107,12 +107,12 @@ public class Generador {
 			DateFormat formato = new SimpleDateFormat("HH-mm-ss dd-MM-yyyy");
 			Date fecha = new Date();
 			try {
-				escribir = new PrintWriter("Diagrama (" + formato.format(fecha)
-						+ ").html");
+				escribir = new PrintWriter("Diagrama (" + formato.format(fecha) + ").html");
 			} catch (FileNotFoundException e) {
-				JOptionPane.showMessageDialog(null,
-						"No se pudo crear el archivo del diagrama",
-						"No se puede crear", JOptionPane.ERROR_MESSAGE);
+				if (local) {
+					JOptionPane.showMessageDialog(null, "No se pudo crear el archivo del diagrama", "No se puede crear",
+							JOptionPane.ERROR_MESSAGE);
+				}
 				System.exit(0);
 			}
 		}
@@ -149,9 +149,7 @@ public class Generador {
 
 	public void cerrarPrintWriter() {
 		if (local) {
-			JOptionPane.showMessageDialog(null,
-					"Diagrama de secuencia creado con éxito en el directorio:\n"
-							+ System.getProperty("user.dir"),
+			JOptionPane.showMessageDialog(null, "Diagrama de secuencia creado con éxito en el directorio:\n" + System.getProperty("user.dir"),
 					"Diagrama creado", JOptionPane.INFORMATION_MESSAGE);
 			escribir.close();
 		}
@@ -168,18 +166,20 @@ public class Generador {
 		try {
 			lector = new CSVReader(new FileReader(nombreCaptura));
 		} catch (FileNotFoundException e1) {
-			JOptionPane.showMessageDialog(null,
-					"No se encontro el archivo captura.csv en el directorio:\n"
-							+ System.getProperty("user.dir"), "No encontrado",
-					JOptionPane.WARNING_MESSAGE);
+			if (local) {
+				JOptionPane.showMessageDialog(null,
+						"No se encontro el archivo captura.csv en el directorio:\n" + System.getProperty("user.dir"), "No encontrado",
+						JOptionPane.WARNING_MESSAGE);
+			}
 			System.exit(0);
 		}
 		try {
 			listaLineas = lector.readAll();
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(null,
-					"No se pudo leer el archivo captura.csv (Esta corrupto)",
-					"Error en archivo", JOptionPane.ERROR_MESSAGE);
+			if (local) {
+				JOptionPane.showMessageDialog(null, "No se pudo leer el archivo captura.csv (Esta corrupto)", "Error en archivo",
+						JOptionPane.ERROR_MESSAGE);
+			}
 			System.exit(0);
 		}
 		List<String> destinos = new ArrayList<String>();
@@ -187,12 +187,10 @@ public class Generador {
 		for (int i = 1; i < listaLineas.size(); i++) {
 			lineaActual = (String[]) listaLineas.get(i);
 			ipMac = new String[2];
-			if (!destinos.contains(lineaActual[2])
-					&& !lineaActual[4].equals(ARP)) {
+			if (!destinos.contains(lineaActual[2]) && !lineaActual[4].equals(ARP)) {
 				destinos.add(lineaActual[2]);
 			}
-			if (!destinos.contains(lineaActual[3])
-					&& !lineaActual[4].equals(ARP)) {
+			if (!destinos.contains(lineaActual[3]) && !lineaActual[4].equals(ARP)) {
 				destinos.add(lineaActual[3]);
 			}
 			if (lineaActual[4].equals(ARP)) {
@@ -240,13 +238,9 @@ public class Generador {
 				titulo = titulo + PUNTOS;
 				tamTitulo = titulo.length();
 			}
-			imprimir(paddingCabecera + "| " + titulo
-					+ paddingTitulos.substring(tamTitulo + 1) + "|"
-					+ paddingCabecera);
+			imprimir(paddingCabecera + "| " + titulo + paddingTitulos.substring(tamTitulo + 1) + "|" + paddingCabecera);
 		}
-		imprimirln(paddingCabecera + "| " + BROADCAST
-				+ paddingTitulos.substring(BROADCAST.length() + 1) + "|"
-				+ paddingCabecera);
+		imprimirln(paddingCabecera + "| " + BROADCAST + paddingTitulos.substring(BROADCAST.length() + 1) + "|" + paddingCabecera);
 		for (int i = 0; i <= listaIps.size(); i++) {
 			imprimir(paddingCabecera + tapa + paddingCabecera);
 		}
