@@ -16,33 +16,71 @@ import au.com.bytecode.opencsv.CSVReader;
 
 public class Generador {
 
+	// Defino las variables estaticas
+	// Tamaño por defecto de las cabeceras
 	public final static int TAM_DEF_CAB = 19;
+	// Tamaño minimo que pueden tener las cabeceras
 	public final static int MIN_TAM_CAB = 13;
+	// Maximo tamaño que se le puede restar a la distancia entre cabeceras
 	public final static int MAX_TAM_RESTA = 9;
+	// Rotulo de broadcast
 	public final static String BROADCAST = "Broadcast";
+	// Rotulo de ARP
 	public final static String ARP = "ARP";
+	// Rotulo de puntos suspensivos (Se añaden al rotulo cuando no entra en la
+	// cabecera)
 	public final static String PUNTOS = "...";
+	// Nombre por defecto de la captura
 	public final static String NOM_CAP_DEF = "./captura.csv";
 
+	// Defino las variables de la clase
+	// El tamaño que van a tener las cabeceras
 	private int tn;
+	// El valor que se restara a la distancia entre cabeceras
 	private int restar;
+	// El tamaño maximo del titulo de cada cabecera
 	private int longTitulo;
+	// El texto que dibuja la parte superior e inferior de la cabecera
 	private String tapa;
+	// El padding que hay entre cabeceras
 	private String paddingCabecera;
+	// El padding del titulo con respecto al borde derecho de la cabecera
 	private String paddingTitulos;
+	// El paddding entre las lineas punteadas
 	private String paddingLineas;
+	// El texto que dibuja la flecha hacia la derecha
 	private String flechaDerecha;
+	// El texto que dibuja la flecha hacia la izquierda
 	private String flechaIzquierda;
+	// El texto que dibuja el cuerpo de la flecha sin cabeza (Usado de manera
+	// concatenada para alargar las flechas)
 	private String cuerpoFlecha;
+	// El nombre del archivo .csv
 	private String nombreCaptura;
+	// Booleano que determina si la ejecucion es local o en el servidor (En
+	// realidad, asumo que no es local cuando se le pasan argumentos al main, ya
+	// que se ha ejecutado desde la consola de comandos)
 	private boolean local;
 
+	// En esta lista se almacenan todas las lineas que conforman el .csv, cada
+	// linea esta representada como un arreglo de Strings
 	private List<String[]> listaLineas;
+	// El objeto que escribe el texto en el archivo
 	private PrintWriter escribir;
+	// El objeto que cree para generar las cabeceras y flechas de manera
+	// dinamica mediante metodos con el tamaño como parametro
 	private TextoGrafico tg;
+	// La lista de ips que participan en la captura
 	private List<String> listaIps;
+	// Lista de arreglos de Strings, el primer elemento de cada arreglo es la
+	// mac y el segundo la ip asociada a esa mac
 	private List<String[]> macs;
 
+	// Funcion que inicializa los valores de las variables de la clase, crea
+	// todos los graficos metiante la clase TextoGrafico y a partir de los
+	// valores de las variables tn (Tamaño de cabecera) y resta (Espacio a
+	// restar entre cabeceras) determina el tamaño proporcional del grafico
+	// Tambien inicializa las listas mac y listaIps
 	void inicializarVariables() {
 		tg = new TextoGrafico();
 		longTitulo = tn - 4;
@@ -57,6 +95,9 @@ public class Generador {
 		listaIps = new ArrayList<String>();
 	}
 
+	// Esta funcion valida los valores de tamaño y resta ingresados como
+	// parametros del constructor, el tamaño no puede ser menor al tamaño minimo
+	// posible y la resta no puede ser mayor a la resta maxima posible
 	void cambiarProporcion(int tam, int rest) {
 		if (tam < MIN_TAM_CAB) {
 			tam = MIN_TAM_CAB;
@@ -70,6 +111,12 @@ public class Generador {
 		restar = rest;
 	}
 
+	// Constructor que recibe solo la direccion del archivo como parametro,
+	// establece el tamaño por defecto de cabecera, determina que la resta de
+	// espacio entre cabeceras es 0 (No se resta espacio), establece que la
+	// ejecucion no es local (Ya que se recibieron parametros, lo que significa
+	// que se ejecuto por consola, probablemente desde el servidor web) y se
+	// inicializan las variables con la funcion correspondiente
 	public Generador(String archivo) {
 		tn = TAM_DEF_CAB;
 		restar = 0;
@@ -78,6 +125,9 @@ public class Generador {
 		inicializarVariables();
 	}
 
+	// Este constructor ademas recibe como parametros el tamaño de cabecera y la
+	// resta a realizar en el espacio entre cabeceras, por lo tanto usa la
+	// funcion de validacion cambiarProporcion para establecerlos
 	public Generador(String archivo, int tam, int rest) {
 		cambiarProporcion(tam, rest);
 		local = false;
@@ -85,6 +135,9 @@ public class Generador {
 		inicializarVariables();
 	}
 
+	// Este constructor no recibe nada, por lo tanto asume ejecucion local (Que
+	// no se uso consola, posiblemente se hizo doble click sobre el archivo
+	// .jar)
 	public Generador() {
 		tn = TAM_DEF_CAB;
 		restar = 0;
@@ -93,6 +146,9 @@ public class Generador {
 		inicializarVariables();
 	}
 
+	// Este constructor no se usa actualmente, seria para el caso de una
+	// ejecucion local usando la consola para agregar los parametros de tamaño y
+	// resta
 	public Generador(int tam, int rest) {
 		cambiarProporcion(tam, rest);
 		tn = tam;
@@ -102,6 +158,8 @@ public class Generador {
 		inicializarVariables();
 	}
 
+	// Inicializo el escritor para guardar el archivo html, le asigno la fecha y
+	// hora actual en el nombre
 	public void iniciarPrintWriter() {
 		if (local) {
 			DateFormat formato = new SimpleDateFormat("HH-mm-ss dd-MM-yyyy");
@@ -118,6 +176,10 @@ public class Generador {
 		}
 	}
 
+	// Esta funcion sirve que la escritura se haga en un archivo de texto o por
+	// salida estandar dependiendo de si la ejecucion es local o no.
+	// Cada vez que la aplicacion necesita escribir algo con salto de linea,
+	// llama a esta funcion
 	public void imprimirln(String texto) {
 		if (local) {
 			escribir.println(texto);
@@ -126,6 +188,7 @@ public class Generador {
 		}
 	}
 
+	// Igual a la anterior pero sin salto de linea
 	public void imprimir(String texto) {
 		if (local) {
 			escribir.print(texto);
@@ -134,6 +197,9 @@ public class Generador {
 		}
 	}
 
+	// Esta funcion solo escribe las etiquetas html iniciales (La etiqueta <pre>
+	// me asegura que el texto no va a ser modificado, ya que html lo asume como
+	// preformateado
 	public void generarCabecerahtml() {
 		imprimirln("<html>");
 		imprimirln("<title>Diagrama de Secuencia</title>");
@@ -141,12 +207,14 @@ public class Generador {
 		imprimirln("<pre>");
 	}
 
+	// Esta funcion escribe las etiquetas html finales
 	public void generarCierrehtml() {
 		imprimirln("</pre>");
 		imprimirln("</body>");
 		imprimirln("</html>");
 	}
 
+	// Cierra la clase que escribe el archivo si la ejecucion es local
 	public void cerrarPrintWriter() {
 		if (local) {
 			JOptionPane.showMessageDialog(null, "Diagrama de secuencia creado con éxito en el directorio:\n" + System.getProperty("user.dir"),
@@ -155,10 +223,20 @@ public class Generador {
 		}
 	}
 
+	// Genera un salto de linea
 	public void nLinea() {
 		imprimirln("");
 	}
 
+	// Creo el lector de .csv con la libreria, luego leo todas las lineas y las
+	// almaceno en la lista listaLineas, despues linea a linea tomo el campo
+	// origen y destino y si no fueron almacenados previamente en la lista
+	// auxiliar destinos, los almaceno en ella
+	// Como caso aparte, si el protocolo es ARP uso el arreglo auxiliar ipMac
+	// para diseccionar los mensajes y obtener la ip asociada a la mac, almaceno
+	// mac e ip en el arreglo y luego lo inserto en la lista macs
+	// Despues cierro el lector y paso las ips de la lista auxiliar destino a
+	// listaIps y las ips de la lista mac tambien a listaIps
 	public void obtenerIpsCSV() {
 		CSVReader lector = null;
 		listaLineas = null;
@@ -223,6 +301,13 @@ public class Generador {
 		}
 	}
 
+	// Genera las cabeceras imprimiendo primero las tapas usando la cantidad de
+	// ips en listaIps, despues imprime cada ip usando el padding para que haya
+	// la separacion exacta, ademas si el tamaño de la ip es mayor al maximo
+	// permitido, se le resta el excedente y se le agregan puntos suspensivos
+	// Siempre el ultimo titulo que se agrega es el de Broadcast, el cual no
+	// esta almacenado en listaIps, por lo tanto se inserta manualmente
+	// Luego se imprimen las tapas inferiores y se hace salto de linea
 	public void generarCabeceras() {
 		int tamTitulo;
 		String titulo;
@@ -247,6 +332,7 @@ public class Generador {
 		nLinea();
 	}
 
+	// Imprime las lineas punteadas sin flechas ni mensajes
 	public void lineaPunteada() {
 		for (int i = 0; i <= listaIps.size(); i++) {
 			imprimir(paddingLineas + "|" + paddingLineas);
@@ -254,6 +340,15 @@ public class Generador {
 		nLinea();
 	}
 
+	// Determina si la flecha es derecha o izquierda verificando si el origen es
+	// menor o mayor al destino, luego imprime lineas hasta llegar al punto
+	// extremo izquierdo de la flecha, al llegar en caso de que sea flecha
+	// izquierda, imprime la flecha, en caso de que sea flecha derecha y la
+	// longitud sea 1, imprime la derecha, si la longitud es mayor, solo imprime
+	// el cuerpo de la flecha.
+	// Luego imprime el cuerpo de la flecha hasta alcanzar el punto extremo
+	// derecho, alli determina si cierra con flecha derecha o con cuerpo
+	// Luego sigue imprimiendo lineas hasta alcanzar el tamaño de listaIps
 	public void formarFlecha(int origen, int destino) {
 		boolean derecha;
 		int longitud;
@@ -309,6 +404,9 @@ public class Generador {
 		nLinea();
 	}
 
+	// Imprime lineas hasta llegar a la posicion de la ip mas a la izquierda que
+	// participa en la transmision del mensaje, luego imprime el mensaje y
+	// finalmente sigue imprimiento lineas hasta llegar al final
 	public void agregarMensaje(String mensaje, int posOrigen, int posDestino) {
 		int posInicio;
 		if (posOrigen < posDestino) {
@@ -352,6 +450,13 @@ public class Generador {
 		nLinea();
 	}
 
+	// Se lee linea a linea la captura de la lista listaLineas, si el protocolo
+	// es ARP, se busca en la lista macs cual es la ip correspondiente
+	// Se crea el mensaje con los campos numero, protocolo y mensaje
+	// Se establece la posicion origen y destino mediante el indice de listaIps
+	// Con estos campos se llama a agregarMensaje y formarFlecha y luego se
+	// agregan las lineas punteadas
+	// Cada 5 iteraciones de mensajes se agregan las cabeceras nuevamente
 	public void parsearCaptura() {
 		String[] datos = new String[5];
 		String numero;
