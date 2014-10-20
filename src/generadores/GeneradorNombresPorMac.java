@@ -1,4 +1,4 @@
-package generador;
+package generadores;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -7,14 +7,16 @@ import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import graficos.TextoGrafico;
 
 import javax.swing.JOptionPane;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-public class Generador {
+public class GeneradorNombresPorMac {
 
 	// Defino las variables estaticas
 	// Tamaño por defecto de las cabeceras
@@ -76,6 +78,120 @@ public class Generador {
 	// mac y el segundo la ip asociada a esa mac
 	private List<String[]> macs;
 
+	private List<String[]> ipNombre;
+
+	private List<String[]> macNombre;
+	private String[] nombres;
+
+	void cargarListaMacNombre() {
+		macNombre = new ArrayList<String[]>();
+		nombres = new String[] { "HOST", "ROUTER C", "PROXY", "ROUTER B", "ROUTER A", "SERVER HTTP", "SERVER IMG1", "SERVER IMG2" };
+		String[] misMacs = { "Giga-Byt_67:42:3d", "Giga-Byt_68:a0:74", "EdimaxTe_c6:b3:41", "Giga-Byt_6e:73:62", "Giga-Byt_69:65:54",
+				"Netronix_aa:35:6f", "Giga-Byt_63:54:91", "EdimaxTe_c6:b5:18", "Giga-Byt_68:68:9c", "Giga-Byt_8d:52:d4", "Giga-Byt_5e:3b:c9" };
+		int p = 0;
+		for (int i = 0; i < nombres.length; i++) {
+			String[] nombreMacAux = new String[2];
+			if (i == 0 || i == 2 || i >= 5) {
+				nombreMacAux[0] = nombres[i];
+				nombreMacAux[1] = misMacs[p];
+				macNombre.add(nombreMacAux);
+				p++;
+			} else {
+				nombreMacAux[0] = nombres[i];
+				nombreMacAux[1] = misMacs[p];
+				macNombre.add(nombreMacAux);
+				p++;
+				nombreMacAux = new String[2];
+				nombreMacAux[0] = nombres[i];
+				nombreMacAux[1] = misMacs[p];
+				macNombre.add(nombreMacAux);
+				p++;
+			}
+		}
+	}
+
+	// Funcion llamada desde parsearCaptura para reemplazar las ips encontradas
+	// en el archivo .csv por su rotulo en la lista ipNombres
+	String reemplazarPosicion(String ip) {
+		String ipAux = ip;
+		for (int i = 0; i < ipNombre.size(); i++) {
+			if (ipNombre.get(i)[1].equals(ip)) {
+				ipAux = ipNombre.get(i)[0];
+			}
+		}
+		ip = ipAux;
+		return ip;
+	}
+
+	// Funcion que carga la lista ipNombres con los rotulos y sus arreglos de
+	// ips asociados, sirve de indice
+	void cargarListaIpNombre(String nombre, String[] ips) {
+		String[] ipAux;
+		for (int i = 0; i < ips.length; i++) {
+			ipAux = new String[2];
+			ipAux[0] = nombre;
+			ipAux[1] = ips[i];
+			ipNombre.add(ipAux);
+		}
+	}
+
+	// En esta funcion se cambian las ips por los correspondientes alias, creo
+	// una lista con todos los nombres, luego creo arreglos para cada nombre con
+	// las ips asociadas dicho nombre, despues lleno una lista auxiliar con
+	// todas las ips juntas a la cual luego le agrego las ips que no tienen un
+	// nombre asociado.
+	// Finalmente intercambio listaIps por la lista auxiliar que contiene los
+	// rotulos del proyecto integrador y las ips que no esten asociadas a ningun
+	// rotulo y relleno la lista ipNombre con una funcion que rellena el indice
+	// que asocia el rotulo al arreglo
+	public void cambiarIpPorAlias() {
+		List<String> listaIpsAux = new ArrayList<String>();
+		List<String> listaconNombres = new ArrayList<String>();
+		ipNombre = new ArrayList<String[]>();
+		listaconNombres.add("ROUTER A");
+		listaconNombres.add("ROUTER B");
+		listaconNombres.add("ROUTER C");
+		listaconNombres.add("PROXY");
+		listaconNombres.add("HOST");
+		listaconNombres.add("SERVER HTTP");
+		listaconNombres.add("SERVER IMG 1");
+		listaconNombres.add("SERVER IMG 2");
+		listaconNombres.add("DNS");
+		String[] ipsRouterA = new String[] { "200.40.0.100", "144.22.3.1" };
+		String[] ipsRouterB = new String[] { "220.210.12.100", "144.22.3.2" };
+		String[] ipsRouterC = new String[] { "220.210.12.101", "10.10.0.100" };
+		String[] ipsProxy = new String[] { "220.210.12.10" };
+		String[] ipHost = new String[] { "10.10.0.11" };
+		String[] ipServerHTTP = new String[] { "200.40.0.4" };
+		String[] ipServerIMG1 = new String[] { "200.40.0.5" };
+		String[] ipServerIMG2 = new String[] { "200.40.0.6" };
+		String[] ipDNS = new String[] { "200.40.0.2" };
+		listaIpsAux.addAll(Arrays.asList(ipsRouterA));
+		listaIpsAux.addAll(Arrays.asList(ipsRouterB));
+		listaIpsAux.addAll(Arrays.asList(ipsRouterC));
+		listaIpsAux.addAll(Arrays.asList(ipsProxy));
+		listaIpsAux.addAll(Arrays.asList(ipHost));
+		listaIpsAux.addAll(Arrays.asList(ipServerHTTP));
+		listaIpsAux.addAll(Arrays.asList(ipServerIMG1));
+		listaIpsAux.addAll(Arrays.asList(ipServerIMG2));
+		listaIpsAux.addAll(Arrays.asList(ipDNS));
+		for (int i = 0; i < listaIps.size(); i++) {
+			if (!listaIpsAux.contains(listaIps.get(i))) {
+				listaconNombres.add(listaIps.get(i));
+			}
+		}
+		listaIps = listaconNombres;
+		cargarListaIpNombre("ROUTER A", ipsRouterA);
+		cargarListaIpNombre("ROUTER B", ipsRouterB);
+		cargarListaIpNombre("ROUTER C", ipsRouterC);
+		cargarListaIpNombre("PROXY", ipsProxy);
+		cargarListaIpNombre("HOST", ipHost);
+		cargarListaIpNombre("SERVER HTTP", ipServerHTTP);
+		cargarListaIpNombre("SERVER IMG 1", ipServerIMG1);
+		cargarListaIpNombre("SERVER IMG 2", ipServerIMG2);
+		cargarListaIpNombre("DNS", ipDNS);
+	}
+
 	// Funcion que inicializa los valores de las variables de la clase, crea
 	// todos los graficos metiante la clase TextoGrafico y a partir de los
 	// valores de las variables tn (Tamaño de cabecera) y resta (Espacio a
@@ -93,6 +209,7 @@ public class Generador {
 		cuerpoFlecha = tg.crearFlecha((tn - restar) * 2);
 		macs = new ArrayList<String[]>();
 		listaIps = new ArrayList<String>();
+		cargarListaMacNombre();
 	}
 
 	// Esta funcion valida los valores de tamaño y resta ingresados como
@@ -117,7 +234,7 @@ public class Generador {
 	// ejecucion no es local (Ya que se recibieron parametros, lo que significa
 	// que se ejecuto por consola, probablemente desde el servidor web) y se
 	// inicializan las variables con la funcion correspondiente
-	public Generador(String archivo) {
+	public GeneradorNombresPorMac(String archivo) {
 		tn = TAM_DEF_CAB;
 		restar = 0;
 		local = false;
@@ -128,7 +245,7 @@ public class Generador {
 	// Este constructor ademas recibe como parametros el tamaño de cabecera y la
 	// resta a realizar en el espacio entre cabeceras, por lo tanto usa la
 	// funcion de validacion cambiarProporcion para establecerlos
-	public Generador(String archivo, int tam, int rest) {
+	public GeneradorNombresPorMac(String archivo, int tam, int rest) {
 		cambiarProporcion(tam, rest);
 		local = false;
 		nombreCaptura = archivo;
@@ -138,7 +255,7 @@ public class Generador {
 	// Este constructor no recibe nada, por lo tanto asume ejecucion local (Que
 	// no se uso consola, posiblemente se hizo doble click sobre el archivo
 	// .jar)
-	public Generador() {
+	public GeneradorNombresPorMac() {
 		tn = TAM_DEF_CAB;
 		restar = 0;
 		local = true;
@@ -149,7 +266,7 @@ public class Generador {
 	// Este constructor no se usa actualmente, seria para el caso de una
 	// ejecucion local usando la consola para agregar los parametros de tamaño y
 	// resta
-	public Generador(int tam, int rest) {
+	public GeneradorNombresPorMac(int tam, int rest) {
 		cambiarProporcion(tam, rest);
 		tn = tam;
 		restar = rest;
@@ -331,10 +448,34 @@ public class Generador {
 		}
 		nLinea();
 	}
+	
+	public void generarCabecerasMac() {
+		int tamTitulo;
+		String titulo;
+		for (int i = 0; i <= nombres.length; i++) {
+			imprimir(paddingCabecera + tapa + paddingCabecera);
+		}
+		nLinea();
+		for (int i = 0; i < nombres.length; i++) {
+			titulo = (String) nombres[i];
+			tamTitulo = titulo.length();
+			if (tamTitulo > longTitulo) {
+				titulo = titulo.substring(0, longTitulo - PUNTOS.length());
+				titulo = titulo + PUNTOS;
+				tamTitulo = titulo.length();
+			}
+			imprimir(paddingCabecera + "| " + titulo + paddingTitulos.substring(tamTitulo + 1) + "|" + paddingCabecera);
+		}
+		imprimirln(paddingCabecera + "| " + BROADCAST + paddingTitulos.substring(BROADCAST.length() + 1) + "|" + paddingCabecera);
+		for (int i = 0; i <= nombres.length; i++) {
+			imprimir(paddingCabecera + tapa + paddingCabecera);
+		}
+		nLinea();
+	}
 
 	// Imprime las lineas punteadas sin flechas ni mensajes
 	public void lineaPunteada() {
-		for (int i = 0; i <= listaIps.size(); i++) {
+		for (int i = 0; i <= nombres.length; i++) {
 			imprimir(paddingLineas + "|" + paddingLineas);
 		}
 		nLinea();
@@ -397,7 +538,7 @@ public class Generador {
 				imprimir("|");
 			}
 		}
-		while (posFinal < listaIps.size()) {
+		while (posFinal < nombres.length) {
 			imprimir(paddingLineas + paddingLineas + "|");
 			posFinal++;
 		}
@@ -425,7 +566,7 @@ public class Generador {
 		imprimir(mensaje);
 		int longEspacios = paddingLineas.length() * 2;
 		int longInicial = paddingLineas.length() + 1;
-		int tamTotal = longInicial + (longEspacios + 1) * listaIps.size();
+		int tamTotal = longInicial + (longEspacios + 1) * nombres.length;
 		longitud = longitud + mensaje.length();
 		int medida = longInicial;
 		if (longitud < tamTotal) {
@@ -453,6 +594,7 @@ public class Generador {
 	// Se lee linea a linea la captura de la lista listaLineas, si el protocolo
 	// es ARP, se busca en la lista macs cual es la ip correspondiente
 	// Se crea el mensaje con los campos numero, protocolo y mensaje
+	// Se reemplaza la ip por su rotulo con la funcion reemplazarPosicion
 	// Se establece la posicion origen y destino mediante el indice de listaIps
 	// Con estos campos se llama a agregarMensaje y formarFlecha y luego se
 	// agregan las lineas punteadas
@@ -494,6 +636,8 @@ public class Generador {
 				posListaMacs++;
 			}
 			mensaje = numero + "  " + protocolo + "   " + mensaje;
+			origen = reemplazarPosicion(origen);
+			destino = reemplazarPosicion(destino);
 			posOrigen = listaIps.indexOf(origen);
 			if (!destino.equals(BROADCAST)) {
 				posDestino = listaIps.indexOf(destino);
@@ -507,6 +651,55 @@ public class Generador {
 			agregarCabeceras++;
 			if (agregarCabeceras == 5) {
 				generarCabeceras();
+				agregarCabeceras = 0;
+				lineaPunteada();
+			}
+		}
+	}
+	
+	String obtenerNombreMac(String mac) {
+		String nombre = null;
+		for (int i = 0; i < macNombre.size(); i++) {
+			if (mac.equals(macNombre.get(i)[1])) {
+				nombre = macNombre.get(i)[0];
+			}
+		}
+		return nombre;
+	}
+	
+	public void parsearCapturaMacs() {
+		String[] datos = new String[5];
+		String numero;
+		String protocolo;
+		String origen;
+		String destino;
+		String mensaje;
+		int posOrigen;
+		int posDestino;
+		int agregarCabeceras = 0;
+		for (int i = 1; i < listaLineas.size(); i++) {
+			datos = (String[]) listaLineas.get(i);
+			numero = datos[0];
+			protocolo = datos[6];
+			origen = datos[2];
+			destino = datos[3];
+			mensaje = datos[8];
+			mensaje = numero + "  " + protocolo + "   " + mensaje;
+			origen = obtenerNombreMac(origen);
+			posOrigen = Arrays.asList(nombres).indexOf(origen);
+			if (!destino.equals("Broadcast")) {
+				destino = obtenerNombreMac(destino);
+				posDestino = Arrays.asList(nombres).indexOf(destino);
+			} else {
+				posDestino = nombres.length;
+			}
+			agregarMensaje(mensaje, posOrigen, posDestino);
+			formarFlecha(posOrigen, posDestino);
+			lineaPunteada();
+			lineaPunteada();
+			agregarCabeceras++;
+			if (agregarCabeceras == 5) {
+				generarCabecerasMac();
 				agregarCabeceras = 0;
 				lineaPunteada();
 			}

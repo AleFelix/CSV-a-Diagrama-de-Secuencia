@@ -1,4 +1,4 @@
-package generador;
+package graficos;
 
 public class TextoGrafico {
 
